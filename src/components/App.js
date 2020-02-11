@@ -3,7 +3,7 @@ import '../css/App.css';
 import AddAppointments from './AddAppointments';
 import ListAppointments from './ListAppointments';
 import SearchAppointments from './SearchAppointments';
-import { without } from 'lodash';
+import { without, findIndex } from 'lodash';
 
 class App extends Component{
 
@@ -13,7 +13,17 @@ class App extends Component{
       myAppointments: [],
       lastIndex: 0,
       formDisplay: false,
+      orderBy: 'petName',
+      orderDir: 'Asc',
+      queryText: '',
     }
+
+    this.deleteAppointments = this.deleteAppointments.bind(this);
+    this.toogleForm = this.toogleForm.bind(this);
+    this.addAppointment = this.addAppointment.bind(this);
+    this.changeOrder = this.changeOrder.bind(this);
+    this.searchApts = this.searchApts.bind(this);
+    this.updateInfo = this.updateInfo.bind(this);
   }
 
   componentDidMount(){
@@ -42,14 +52,23 @@ class App extends Component{
       myAppointments: tempsApts
     })
 
-    this.deleteAppointments = this.deleteAppointments.bind(this);
-    this.toogleForm = this.toogleForm.bind(this);
-    this.addAppointment = this.addAppointment.bind(this);
   }
 
   toogleForm(){
     this.setState({
       formDisplay: !this.state.formDisplay
+    })
+  }
+
+  updateInfo(name, value, id){
+    let tempsApts = this.state.myAppointments;
+    let aptIndex = findIndex(this.state.myAppointments, {
+      aptId: id
+    });
+
+    tempsApts[aptIndex][name] = value;
+    this.setState({
+      myAppointments: tempsApts
     })
   }
 
@@ -63,8 +82,43 @@ class App extends Component{
     });
   }
 
+  changeOrder(order, direction){
+    this.setState({
+      orderBy: order,
+      orderDir: direction
+    })
+  }
+
+  searchApts(query) {
+    this.setState({
+      queryText: query
+    })
+  }
+
   render() {
 
+    let order;
+    let filteredApts = this.state.myAppointments;
+    
+    if(this.state.orderDir === 'asc'){
+      order = 1;
+    } else {
+      order = -1;
+    }
+
+    filteredApts = filteredApts.sort((a,b) => {
+      if (a[this.state.orderBy].toLowerCase() < b[this.state.orderBy].toLowerCase()){
+        reurn -1 * order;
+      } else {
+        return 1 * order;
+      }
+    }).filter(eachItem => {
+      return (
+        eachItem['petName'].toLowerCase().includes(this.state.queryText.toLowerCase()) ||
+        eachItem['ownerName'].toLowerCase().includes(this.state.queryText.toLowerCase()) ||
+        eachItem['aptNotes'].toLowerCase().includes(this.state.queryText.toLowerCase())
+      )
+    });
 
     return (
       <main class="page bg-white" id="petratings">
@@ -76,8 +130,8 @@ class App extends Component{
                 toogleForm={this.toogleForm}
                 AddAppointment = {this.AddAppointment}
                 />
-                <ListAppointments appointments={this.state.myAppointments} deleteAppointments={this.deleteAppointments}/>
-                <SearchAppointments />
+                <ListAppointments appointments={filteredApts} deleteAppointments={this.deleteAppointments} updateInfo={this.updateInfo}/>
+                <SearchAppointments orderBy={this.state.orderBy} orderDir={this.state.orderDir} changeOrder={this.changeOrder} searchApts={this.searchApts}/>
               </div>
             </div>
           </div>
