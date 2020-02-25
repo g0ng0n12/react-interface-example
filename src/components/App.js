@@ -46,7 +46,7 @@ class App extends Component{
 
   deleteAppointments(apt){
     let tempsApts = this.state.appointments;
-    tempsApts = without(tempsApts, atp);
+    tempsApts = without(tempsApts, apt);
 
     this.setState({
       myAppointments: tempsApts
@@ -108,7 +108,7 @@ class App extends Component{
 
     filteredApts = filteredApts.sort((a,b) => {
       if (a[this.state.orderBy].toLowerCase() < b[this.state.orderBy].toLowerCase()){
-        reurn -1 * order;
+        return -1 * order;
       } else {
         return 1 * order;
       }
